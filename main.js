@@ -35,6 +35,7 @@ var template = `<a class="link entry" href="">{text}</a>`;
 var dataEntries = localStorage.getItem("clean-page-links") ? JSON.parse(localStorage.getItem("clean-page-links")) : [];
 var bgImgUrl = localStorage.getItem("clean-page-img") ? localStorage.getItem("clean-page-img") : 'undefined';
 var usernameValue = localStorage.getItem("clean-page-name") ? localStorage.getItem("clean-page-name") : 'undefined';
+var defaultSearch = localStorage.getItem("clean-page-search") ? localStorage.getItem("clean-page-search") : 'duckduckgo';
 var isOpen = false;
 var current = "";
 var alphabet = ['a', 'b', 'c', 'd', 'e', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z'];
@@ -53,7 +54,7 @@ DrawDataEntries();
 
 inputEl.onkeydown = (e) => { if (e.key == 'Enter') PreventAndDo(e, HandleSearchBarEvent); }
 
-function Config() { return `CONFIG:\nname=${usernameValue}\nimg=${bgImgUrl}\n\nENTRIES:\n${dataEntries.map(e => `\nentryName=${e['name']}\nentryUrl=${e['url']}`).join('\n')}`}
+function Config() { return `CONFIG:\nname=${usernameValue}\nimg=${bgImgUrl}\nsearch=${defaultSearch}\n\nENTRIES:\n${dataEntries.map(e => `\nentryName=${e['name']}\nentryUrl=${e['url']}`).join('\n')}`}
 function CloseAllWindows() { isOpen = false; ShowCreator(false); ShowConfig(false); RemoveMarkers();}
 
 function SetUserName(value) {
@@ -68,16 +69,23 @@ function SetUserImg(value) {
     localStorage.setItem('clean-page-img', value);
 }
 
+function SetDefaultSearch(value) {
+    defaultSearch = value;
+    localStorage.setItem('clean-page-search', value);
+}
+
 
 function SaveConfig() {
     var split = configInput.value.split('\n');
     var nameValue;
     var imgValue;
+    var searchValue;
     var cName;
     var newEntries = [];
     split.forEach(line => {
         if (line.startsWith('name=')) nameValue = line.replace('name=', '');
         else if (line.startsWith('img=')) imgValue = line.replace('img=', '');
+        else if (line.startsWith('search=')) searchValue = line.replace('search=', '');
         else if (line.startsWith('entryName=')) cName = line.replace('entryName=','');
         else if (line.startsWith('entryUrl=')) newEntries.push({ "name": cName, "url": line.replace('entryUrl=','') });
     });
@@ -87,6 +95,7 @@ function SaveConfig() {
     localStorage.setItem('clean-page-links', JSON.stringify(dataEntries));
     SetUserName(nameValue);
     SetUserImg(imgValue);
+    SetDefaultSearch(searchValue);
     DrawDataEntries();
 }
 
@@ -94,9 +103,10 @@ function HandleSearchBarEvent() {
     var searchValue = ExtractAndReset(inputEl);
     if (searchValue.startsWith('setname')) SetUserName(searchValue.replace("setname ", ""));
     else if (searchValue.startsWith('setimg')) SetUserImg(searchValue.replace("setimg ", ''));
+    else if (searchValue.startsWith('setsearch')) SetDefaultSearch(searchValue.replace("setsearch ", ''));
     else if (searchValue.startsWith("-r")) Search("https://reddit.com/r/", searchValue, "-r ", "");
     else if (searchValue.startsWith("-e7")) Search("https://epic7x.com/character/", searchValue, "-e7 ", "");
-    else Search("https://duckduckgo.com/?q=", searchValue, /" "/g, "+");
+    else Search(`https://${defaultSearch}.com/?q=`, searchValue, /" "/g, "+");
 }
 
 function RemoveEntry(entry) {
