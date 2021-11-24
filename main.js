@@ -31,6 +31,21 @@ function ParseToHTML(htmlString) {
     return el.firstChild;
 }
 
+function ShiftFocus(direction) {
+    var activeElement = document.activeElement;
+    if (activeElement && activeElement.tagName == "A") {
+        if (direction == -1 && activeElement.nextSibling) activeElement.nextSibling.focus();
+        else if (direction == 1 && activeElement.previousSibling) activeElement.previousSibling.focus();
+        else if (document.getElementsByTagName("a") && document.getElementsByTagName("a").length > 0) {
+            var index = direction == 1 ? document.getElementsByTagName("a").length - 1 : 0;
+            document.getElementsByTagName("a")[index].focus();
+        }
+    } else if (document.getElementsByTagName("a") && document.getElementsByTagName("a").length > 0) {
+        var index = direction == 1 ? document.getElementsByTagName("a").length - 1 : 0;
+        document.getElementsByTagName("a")[index].focus();
+    }
+}
+
 var template = `<a class="link entry" href="">{text}</a>`;
 var dataEntries = localStorage.getItem("clean-page-links") ? JSON.parse(localStorage.getItem("clean-page-links")) : [];
 var bgImgUrl = localStorage.getItem("clean-page-img") ? localStorage.getItem("clean-page-img") : 'undefined';
@@ -158,6 +173,8 @@ document.onkeydown = function(e) {
     if (e.key == 'Escape') { CloseAllWindows(); return; }
     if (!IsAnyActive([entryCreator, configInput]) && !IsSelectedInputSource()) {
         if (!isOpen) {
+            IfKeyPreventAndDO(e, 'ArrowUp', ShiftFocus, [1]);
+            IfKeyPreventAndDO(e, 'ArrowDown', ShiftFocus, [-1]);
             IfKeyPreventAndDO(e, 'c', ShowConfig, [true]);
             if (e.key == 's') { e.preventDefault(); inputEl.focus(); }
         }
