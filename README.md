@@ -4,6 +4,7 @@
 - (searchvalue)
 - setimg (url to image)
 - setname (name)
+- setsearch (searchurl, like https://duckduckgo.com/?q=)
 - -r (subreddit)
 - -e7 (heroname)
 
