@@ -35,7 +35,7 @@ var template = `<a class="link entry" href="">{text}</a>`;
 var dataEntries = localStorage.getItem("clean-page-links") ? JSON.parse(localStorage.getItem("clean-page-links")) : [];
 var bgImgUrl = localStorage.getItem("clean-page-img") ? localStorage.getItem("clean-page-img") : 'undefined';
 var usernameValue = localStorage.getItem("clean-page-name") ? localStorage.getItem("clean-page-name") : 'undefined';
-var defaultSearch = localStorage.getItem("clean-page-search") ? localStorage.getItem("clean-page-search") : 'duckduckgo';
+var defaultSearch = localStorage.getItem("clean-page-search") ? localStorage.getItem("clean-page-search") : 'https:/duckduckgo.com/?q=';
 var isOpen = false;
 var current = "";
 var alphabet = ['a', 'b', 'c', 'd', 'e', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z'];
@@ -106,7 +106,7 @@ function HandleSearchBarEvent() {
     else if (searchValue.startsWith('setsearch')) SetDefaultSearch(searchValue.replace("setsearch ", ''));
     else if (searchValue.startsWith("-r")) Search("https://reddit.com/r/", searchValue, "-r ", "");
     else if (searchValue.startsWith("-e7")) Search("https://epic7x.com/character/", searchValue, "-e7 ", "");
-    else Search(`https://${defaultSearch}.com/?q=`, searchValue, /" "/g, "+");
+    else Search(defaultSearch, searchValue, /" "/g, "+");
 }
 
 function RemoveEntry(entry) {
