@@ -291,8 +291,8 @@ button:hover {
     bottom: 0;
     padding: 50px;
     text-align: center;
-    height: 400px;
-    width: 400px;
+    max-height: 400px;
+    max-width: 400px;
     background-color: var(--color0);
     border-radius: 9px;
     border: solid 3px var(--color2);
