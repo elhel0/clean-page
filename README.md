@@ -14,3 +14,5 @@
 - s (focuses searchbar)
 - escape (closes popups and vimthing)
 - delete (delete entry when selected)
+- keyup (selects the previous entry)
+- keydown (selects the next entry)
