@@ -5,8 +5,9 @@
 - setimg (url to image)
 - setname (name)
 - setsearch (searchurl, like https://duckduckgo.com/?q=)
-- -r (subreddit)
-- -e7 (heroname)
+- -r (subreddit) <- Reddit
+- -e7 (heroname) <- Epic7x
+- -mal (anime) <- MyAnimeList
 
 ### keyboardnavigation
 - f (vimlike navigation, can be closed with f/esc)
