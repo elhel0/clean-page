@@ -50,7 +50,18 @@ var template = `<a class="link entry" href="">{text}</a>`;
 var dataEntries = localStorage.getItem("clean-page-links") ? JSON.parse(localStorage.getItem("clean-page-links")) : [];
 var bgImgUrl = localStorage.getItem("clean-page-img") ? localStorage.getItem("clean-page-img") : 'undefined';
 var usernameValue = localStorage.getItem("clean-page-name") ? localStorage.getItem("clean-page-name") : 'undefined';
-var defaultSearch = localStorage.getItem("clean-page-search") ? localStorage.getItem("clean-page-search") : 'https:/duckduckgo.com/?q=';
+var defaultSearch = localStorage.getItem("clean-page-search") ? localStorage.getItem("clean-page-search") : 'https://duckduckgo.com/?q=';
+var customSearch = localStorage.getItem("clean-page-custom-search") ? JSON.parse(localStorage.getItem("clean-page-custom-search")) : [{ "prefix": "-mal", "url": "https://myanimelist.net/anime.php?cat=anime&q=" }, { "prefix": "-e7", "url": "https://epic7x.com/character/" }, { "prefix": "-r", "url": "https://www.reddit.com/r/" }]
+var colors = localStorage.getItem("clean-page-colors") ? JSON.parse(localStorage.getItem("clean-page-colors")) : [
+    "#2E2B30",
+    "#635c68",
+    "#908697",
+    "#b7aac0",
+    "#d6c6e0",
+    "#e3d5ec",
+    "#e4d1f0",
+    "#f7ebff"
+];
 var isOpen = false;
 var current = "";
 var alphabet = ['a', 'b', 'c', 'd', 'e', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z'];
@@ -69,7 +80,7 @@ DrawDataEntries();
 
 inputEl.onkeydown = (e) => { if (e.key == 'Enter') PreventAndDo(e, HandleSearchBarEvent); }
 
-function Config() { return `CONFIG:\nname=${usernameValue}\nimg=${bgImgUrl}\nsearch=${defaultSearch}\n\nENTRIES:\n${dataEntries.map(e => `\nentryName=${e['name']}\nentryUrl=${e['url']}`).join('\n')}`}
+function Config() { return `CONFIG:\nname=${usernameValue}\nimg=${bgImgUrl}\nsearch=${defaultSearch}\n\nCustom Searches:\n${customSearch.map(e => `\nprefix=${e.prefix}\nurl=${e.url}`).join('\n')}\n\nCOLORS:\n${colors.map((e,i) => `--color${i}=${e}`).join('\n')}\n\nENTRIES:\n${dataEntries.map(e => `\nentryName=${e['name']}\nentryUrl=${e['url']}`).join('\n')}`}
 function CloseAllWindows() { isOpen = false; ShowCreator(false); ShowConfig(false); RemoveMarkers();}
 
 function SetUserName(value) {
@@ -89,6 +100,12 @@ function SetDefaultSearch(value) {
     localStorage.setItem('clean-page-search', value);
 }
 
+function setColor(property, value) {
+    let index = parseInt(property.slice(-1));
+    colors[index] = value;
+    document.documentElement.style.setProperty(property, value)
+    localStorage.setItem("clean-page-colors", JSON.stringify(colors));
+}
 
 function SaveConfig() {
     var split = configInput.value.split('\n');
@@ -96,18 +113,25 @@ function SaveConfig() {
     var imgValue;
     var searchValue;
     var cName;
+    var prefix;
     var newEntries = [];
+    var newSearches = [];
     split.forEach(line => {
         if (line.startsWith('name=')) nameValue = line.replace('name=', '');
         else if (line.startsWith('img=')) imgValue = line.replace('img=', '');
         else if (line.startsWith('search=')) searchValue = line.replace('search=', '');
         else if (line.startsWith('entryName=')) cName = line.replace('entryName=','');
         else if (line.startsWith('entryUrl=')) newEntries.push({ "name": cName, "url": line.replace('entryUrl=','') });
+	    else if (line.startsWith('prefix=')) prefix = line.replace('prefix=','');
+        else if (line.startsWith('url=')) newSearches.push({ "prefix": prefix, "url": line.replace('url=','') });
+        else if (line.startsWith('--color')) setColor(line.split("=")[0], line.split("=")[1]);
     });
     var entries = document.getElementsByClassName('entry');
     for (var i = entries.length - 1; i >= 0; i--) { entries[i].remove(); }
     dataEntries = newEntries;
+    customSearch = newSearches;
     localStorage.setItem('clean-page-links', JSON.stringify(dataEntries));
+    localStorage.setItem('clean-page-custom-search', JSON.stringify(customSearch));
     SetUserName(nameValue);
     SetUserImg(imgValue);
     SetDefaultSearch(searchValue);
@@ -119,9 +143,18 @@ function HandleSearchBarEvent() {
     if (searchValue.startsWith('setname')) SetUserName(searchValue.replace("setname ", ""));
     else if (searchValue.startsWith('setimg')) SetUserImg(searchValue.replace("setimg ", ''));
     else if (searchValue.startsWith('setsearch')) SetDefaultSearch(searchValue.replace("setsearch ", ''));
-    else if (searchValue.startsWith("-r")) Search("https://reddit.com/r/", searchValue, "-r ", "");
-    else if (searchValue.startsWith("-e7")) Search("https://epic7x.com/character/", searchValue, "-e7 ", "");
-    else Search(defaultSearch, searchValue, /" "/g, "+");
+    else
+    {
+	    var hasFoundSearchPrefix = false;
+	    customSearch.forEach(search => {
+	    if (searchValue.startsWith(search.prefix)) {
+                Search(search.url, searchValue, `${search.prefix} `, "");
+		hasFoundSearchPrefix = true;
+	    	return;
+	    }
+	});
+	if (!hasFoundSearchPrefix) Search(defaultSearch, searchValue, /" "/g, "+");
+    }
 }
 
 function RemoveEntry(entry) {
@@ -152,7 +185,7 @@ function ShowCreator(isActive = true) { if (SetActive(entryCreator, "inline-grid
 function ShowConfig(isActive = true) {
     var wasActive = IsActive(configInput);
     if (SetActive(configInput, 'block', isActive)) configInput.focus();
-    if (isActive) configInput.value = Config();
+    if (isActive) { configInput.value = Config(); configInput.setSelectionRange(0,0);}
     else if (wasActive) SaveConfig();
 }
 
